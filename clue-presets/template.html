@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="app" content="clue-presets">
+<title>Clue Presets</title>
+<link rel="icon" href="icon.png">
+<style>
+:root {
+  --bg: #f5f0e6;
+  --panel: #fffdf8;
+  --panel-2: #f1eadc;
+  --slot: #e9e0cd;
+  --slot-edge: #d4c6aa;
+  --border: #ddd1bb;
+  --text: #2b231a;
+  --muted: #6d604e;
+  --faint: #a0927b;
+  --accent: #9a6a12;
+  --link: #8a5a00;
+  --worn: #2f6f8f;
+  --pack: #5b6b2a;
+  --warn: #a5401c;
+  --shadow: 0 1px 2px rgba(60, 40, 10, .08), 0 4px 16px rgba(60, 40, 10, .06);
+  --t-easy: #3c8d4f;
+  --t-medium: #2f73b8;
+  --t-hard: #7b4fc9;
+  --t-elite: #b9860f;
+  --t-master: #c0392b;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15120e;
+    --panel: #1e1a15;
+    --panel-2: #26211a;
+    --slot: #2d261d;
+    --slot-edge: #3e3428;
+    --border: #3a3127;
+    --text: #ece4d4;
+    --muted: #b0a28a;
+    --faint: #776a57;
+    --accent: #e0ad4a;
+    --link: #e9b860;
+    --worn: #6cb4d6;
+    --pack: #a9bf62;
+    --warn: #e5794f;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.25);
+    --t-easy: #5cc174;
+    --t-medium: #5aa2e8;
+    --t-hard: #a687ee;
+    --t-elite: #e8b636;
+    --t-master: #ee6a5a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15120e; --panel: #1e1a15; --panel-2: #26211a; --slot: #2d261d; --slot-edge: #3e3428;
+  --border: #3a3127; --text: #ece4d4; --muted: #b0a28a; --faint: #776a57; --accent: #e0ad4a;
+  --link: #e9b860; --worn: #6cb4d6; --pack: #a9bf62; --warn: #e5794f;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.25);
+  --t-easy: #5cc174; --t-medium: #5aa2e8; --t-hard: #a687ee; --t-elite: #e8b636; --t-master: #ee6a5a;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+}
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 28px 16px 64px; }
+
+header.top { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: end; justify-content: space-between; }
+h1 { font-size: 28px; line-height: 1.15; margin: 0; letter-spacing: -.01em; }
+.sub { color: var(--muted); margin: 6px 0 0; max-width: 62ch; }
+.controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.controls label { color: var(--muted); font-size: 13px; }
+select, .themebtn {
+  font: inherit; font-size: 14px; color: var(--text); background: var(--panel);
+  border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px;
+}
+.themebtn { cursor: pointer; }
+.rebuild {
+  font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+  color: var(--accent); background: var(--panel); border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  border-radius: 8px; padding: 6px 12px;
+}
+.rebuild:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 12%, var(--panel)); }
+.rebuild:disabled { cursor: default; opacity: .55; }
+.built { color: var(--faint); font-size: 12.5px; }
+.buildlog { margin: 14px 0 0; display: none; }
+.buildlog.show { display: block; }
+.buildlog pre {
+  margin: 8px 0 0; max-height: 260px; overflow: auto; font-size: 12px; line-height: 1.45;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; white-space: pre-wrap;
+}
+.buildlog .msg { font-size: 14px; font-weight: 600; }
+.buildlog.err .msg { color: var(--warn); }
+
+nav.tiers { display: flex; gap: 8px; margin: 24px 0 18px; flex-wrap: wrap; }
+.tier-tab {
+  --c: var(--accent);
+  display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+  font: inherit; font-weight: 600; color: var(--text);
+  background: var(--panel); border: 1px solid var(--border); border-radius: 999px;
+  padding: 6px 16px 6px 8px; box-shadow: var(--shadow);
+  transition: border-color .15s, background .15s;
+}
+.tier-tab img { width: 26px; height: 26px; object-fit: contain; }
+.tier-tab:hover { border-color: var(--c); }
+.tier-tab[aria-selected="true"] { border-color: var(--c); background: color-mix(in srgb, var(--c) 14%, var(--panel)); }
+.tier-tab .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--c); display: none; }
+.tier-tab.edited .dot { display: inline-block; }
+
+.tier-head { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin-bottom: 14px; }
+.tier-head h2 { margin: 0; font-size: 22px; color: var(--tc); }
+.pill {
+  font-size: 12.5px; font-weight: 600; padding: 3px 10px; border-radius: 999px;
+  background: var(--panel-2); color: var(--muted); border: 1px solid var(--border);
+}
+.pill.edit { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, var(--border)); }
+.stat { color: var(--muted); font-size: 13.5px; }
+
+.board { display: grid; grid-template-columns: auto auto minmax(260px, 1fr); gap: 16px; align-items: start; }
+.card {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+  padding: 16px; box-shadow: var(--shadow); min-width: 0;
+}
+.card h3 { margin: 0 0 12px; font-size: 13px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); display: flex; justify-content: space-between; gap: 10px; }
+.card h3 span { text-transform: none; letter-spacing: 0; font-weight: 500; }
+
+.slot {
+  position: relative; width: 52px; height: 52px; border-radius: 9px;
+  background: var(--slot); border: 1px solid var(--slot-edge);
+  display: grid; place-items: center; padding: 0; cursor: default; font: inherit; color: inherit;
+}
+button.slot { cursor: pointer; }
+button.slot:hover, button.slot:focus-visible, button.slot.sel { outline: 2px solid var(--tc); outline-offset: 1px; }
+.slot img { max-width: 40px; max-height: 40px; image-rendering: auto; }
+.slot .lbl { font-size: 10px; color: var(--faint); text-align: center; line-height: 1.1; padding: 2px; }
+.slot.blocked img { opacity: .28; filter: grayscale(.6); }
+.badge {
+  position: absolute; font-size: 10px; font-weight: 700; line-height: 1; padding: 2px 4px; border-radius: 5px;
+  background: var(--panel); border: 1px solid var(--border); color: var(--text);
+}
+.badge.tl { top: -5px; left: -5px; }
+.badge.br { bottom: -5px; right: -5px; }
+.badge.all { color: var(--pack); }
+.badge.alt { color: var(--muted); }
+.badge.clash { color: var(--warn); }
+
+.equip { display: grid; grid-template-columns: repeat(3, 52px); gap: 8px; justify-content: center; }
+.pack { display: grid; grid-template-columns: repeat(4, 52px); gap: 6px; }
+.slot.free { background: transparent; border-style: dashed; }
+.foot { margin-top: 12px; font-size: 12.5px; color: var(--muted); max-width: 240px; }
+.foot.warn { color: var(--warn); }
+
+.detail { position: sticky; top: 16px; }
+.detail .art { height: 128px; display: grid; place-items: center; background: var(--panel-2); border-radius: 10px; margin-bottom: 12px; }
+.detail .art img { max-height: 112px; max-width: 90%; }
+.detail h4 { margin: 0; font-size: 18px; line-height: 1.25; }
+.detail .meta { color: var(--muted); font-size: 13px; margin: 4px 0 10px; display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.detail .ex { font-style: italic; color: var(--muted); margin: 0 0 10px; }
+.detail .note { margin: 0 0 10px; padding: 8px 10px; border-left: 3px solid var(--tc); background: var(--panel-2); border-radius: 0 8px 8px 0; font-size: 14px; }
+.detail .alts { font-size: 13.5px; margin: 0 0 10px; }
+.detail .tiers { display: flex; gap: 6px; flex-wrap: wrap; }
+.detail .hint { color: var(--faint); text-align: center; padding: 40px 0; }
+.tchip { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--faint); }
+.tchip.on { color: var(--c); border-color: color-mix(in srgb, var(--c) 50%, var(--border)); background: color-mix(in srgb, var(--c) 10%, transparent); }
+.where { font-weight: 600; }
+.where.w { color: var(--worn); }
+.where.p { color: var(--pack); }
+
+section.block { margin-top: 28px; }
+section.block > h3 { font-size: 17px; margin: 0 0 10px; }
+.changes { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.changes .card h3 { margin-bottom: 8px; }
+.chiprow { display: flex; flex-wrap: wrap; gap: 6px; }
+.ichip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px 3px 4px; border-radius: 8px;
+  background: var(--panel-2); border: 1px solid var(--border); font-size: 13px; cursor: pointer; color: var(--text); font-family: inherit;
+  text-align: left;
+}
+.ichip .n { white-space: nowrap; }
+.ichip img { width: 22px; height: 22px; object-fit: contain; }
+.ichip:hover, .ichip:focus-visible { border-color: var(--tc); outline: none; }
+.none { color: var(--faint); font-size: 13.5px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+tbody tr:hover { background: var(--panel-2); }
+td.ic { width: 44px; padding-right: 0; }
+td.ic img { width: 32px; height: 32px; object-fit: contain; display: block; }
+td.num { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+td .n { color: var(--muted); font-size: 13px; }
+tr.grp td { background: var(--panel-2); font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+.tablewrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); }
+.matrix td.c { text-align: center; white-space: nowrap; }
+.matrix th.c { text-align: center; }
+.mk { display: inline-block; min-width: 54px; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 6px; }
+.mk.w { color: var(--worn); background: color-mix(in srgb, var(--worn) 12%, transparent); }
+.mk.p { color: var(--pack); background: color-mix(in srgb, var(--pack) 13%, transparent); }
+.mk.x { color: var(--faint); }
+.matrix th .tt { display: block; font-size: 11px; text-transform: none; letter-spacing: 0; color: var(--faint); font-weight: 500; }
+
+.notes { color: var(--muted); font-size: 14px; }
+.notes ul { margin: 0; padding-left: 20px; }
+.notes li { margin: 4px 0; }
+.notes code { font-size: 12.5px; background: var(--panel-2); padding: 1px 5px; border-radius: 5px; color: var(--text); }
+footer { margin-top: 28px; color: var(--faint); font-size: 12.5px; }
+
+@media (max-width: 980px) {
+  .board { grid-template-columns: auto 1fr; }
+  .detail { grid-column: 1 / -1; position: static; }
+}
+@media (max-width: 620px) {
+  .board { grid-template-columns: 1fr; }
+  .equip, .pack { justify-content: center; }
+  .pack { grid-template-columns: repeat(4, 52px); justify-content: center; }
+  .foot { max-width: none; text-align: center; }
+  h1 { font-size: 24px; }
+  .hide-sm { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Clue presets</h1>
+      <p class="sub">What QuerysClues wears and carries for each clue tier. Pick a tier, then hover or tap an item for details; item names open the RuneScape Wiki.</p>
+    </div>
+    <div class="controls">
+      <label for="acct">Account</label>
+      <select id="acct"></select>
+      <button class="rebuild" id="rebuild" type="button">Rebuild</button>
+      <button class="themebtn" id="theme" type="button" title="Switch light/dark">◐</button>
+      <span class="built" id="built"></span>
+    </div>
+  </header>
+  <div class="buildlog" id="buildlog"><span class="msg" id="buildmsg"></span><pre id="buildout"></pre></div>
+
+  <nav class="tiers" id="tabs" role="tablist" aria-label="Clue tier"></nav>
+
+  <main id="tier"></main>
+
+  <section class="block">
+    <h3>Every item, every tier</h3>
+    <div class="tablewrap"><table class="matrix" id="matrix"></table></div>
+  </section>
+
+  <section class="block notes">
+    <h3 style="color:var(--text)">How the script uses a preset</h3>
+    <ul>
+      <li>A preset is a wish list. Lines the bank doesn't have are skipped, logged once and remembered for the run, so they don't send it back to the bank.</li>
+      <li>Worn lines are put on first. A worn line with several items takes the first one the bank has (best first).</li>
+      <li><b>All</b> means the whole stack is withdrawn. Powerbursts are withdrawn last, so they're the first to be cut if the backpack fills up.</li>
+      <li>One backpack slot is left free for the clue scroll (two when a sealed stack is banked). Clue items of the tier are never banked.</li>
+      <li>With <b>Use Meerkats</b> on, the bank trip also takes a Meerkats pouch and all Meerkat scrolls, and summons them at the bank.</li>
+      <li>Per-account edits come from the settings' Presets tab and are saved to <code id="ovsrc"></code>. Tiers with an edit show a dot on their tab when that account is picked.</li>
+    </ul>
+  </section>
+
+  <footer id="foot"></footer>
+</div>
+
+<script>
+const D = /*__DATA__*/null;
+
+const TIER_NAME = { EASY: "Easy", MEDIUM: "Medium", HARD: "Hard", ELITE: "Elite", MASTER: "Master" };
+const TIER_VAR = t => `var(--t-${t.toLowerCase()})`;
+const BUILTIN_NAME = { DEFAULT: "default preset", HARD: "hard preset", ELITE: "elite preset" };
+const PACK_SIZE = 28, KEEP_FREE = 1;
+
+// Equipment layout (col, row), like the in-game worn equipment screen.
+const SLOTS = [
+  ["pocket", 0, 0], ["head", 1, 0], ["aura", 2, 0],
+  ["cape", 0, 1], ["neck", 1, 1], ["ammo", 2, 1],
+  ["weapon", 0, 2], ["body", 1, 2], ["offhand", 2, 2],
+  ["legs", 1, 3],
+  ["hands", 0, 4], ["feet", 1, 4], ["ring", 2, 4],
+];
+const SLOT_NAME = { pocket: "Pocket", head: "Head", aura: "Aura", cape: "Cape", neck: "Neck", ammo: "Ammo",
+  weapon: "Weapon", body: "Body", offhand: "Off-hand", legs: "Legs", hands: "Hands", feet: "Feet", ring: "Ring" };
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+function slotOf(it) {
+  const s = (it.slot || "").toLowerCase();
+  if (["2h", "weapon", "main hand", "main-hand", "mainhand"].includes(s)) return "weapon";
+  if (["off-hand", "offhand", "off hand", "shield"].includes(s)) return "offhand";
+  return s;
+}
+
+// Two items share a name (Passage of the abyss red/yellow): add the wiki version to tell them apart.
+const nameCount = {};
+for (const it of Object.values(D.items)) nameCount[it.name] = (nameCount[it.name] || 0) + 1;
+function label(it) {
+  return it.name + (nameCount[it.name] > 1 && it.anchor && !it.name.includes(it.anchor) ? ` (${it.anchor})` : "");
+}
+function wikiUrl(it) {
+  if (!it.title) return "";
+  return `${D.wiki}/w/${encodeURIComponent(it.title.replace(/ /g, "_"))}` + (it.anchor ? "#" + encodeURIComponent(it.anchor.replace(/ /g, "_")) : "");
+}
+function wikiLink(it, text) {
+  const u = wikiUrl(it);
+  return u ? `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(text ?? label(it))}</a>` : esc(text ?? label(it));
+}
+const img = (it, cls = "") => it.icon ? `<img src="${esc(it.icon)}" alt="" ${cls}>` : "";
+
+// Script notes are on the built-in lines; an account edit borrows them from the built-in it edits.
+function noteOf(e) {
+  if (e.note) return e.note;
+  const own = D.presets[D.builtinFor[state.tier]].entries.find(b => b.keys[0] === e.keys[0] && b.note);
+  return own ? own.note : "";
+}
+
+const state = { tier: "EASY", account: "" };
+
+function presetFor(tier, account = state.account) {
+  if (account && D.accounts[account] && D.accounts[account][tier])
+    return { entries: D.accounts[account][tier], edited: true, base: D.builtinFor[tier] };
+  return { entries: D.presets[D.builtinFor[tier]].entries, edited: false, base: D.builtinFor[tier] };
+}
+
+// Which tiers each item shows up in (for the current account).
+function tiersOf(key) {
+  const out = {};
+  for (const t of D.tiers) {
+    const e = presetFor(t).entries.find(e => e.keys.includes(key));
+    if (e) out[t] = e.worn ? "w" : "p";
+  }
+  return out;
+}
+
+// ── detail panel ──
+let pinned = null;
+function showDetail(sel) {
+  const box = $("#detail");
+  if (!box) return;
+  if (!sel) { box.innerHTML = `<div class="hint">Hover or tap an item<br>to see what it is.</div>`; return; }
+  const { key, entry } = sel;
+  const it = D.items[key];
+  const where = entry
+    ? (entry.worn ? `<span class="where w">Worn · ${esc(SLOT_NAME[slotOf(it)] || it.slot || "slot?")}</span>`
+                  : `<span class="where p">Backpack${entry.all ? " · whole stack" : entry.count > 1 ? " · ×" + entry.count : ""}</span>`)
+    : "";
+  const note = entry && noteOf(entry);
+  const alts = entry && entry.keys.length > 1
+    ? `<p class="alts">${entry.keys[0] === key ? "Falls back to" : "Alternative to"}: ${entry.keys.filter(k => k !== key).map(k => wikiLink(D.items[k])).join(", ")}</p>` : "";
+  const tiers = tiersOf(key);
+  const art = it.detail || it.icon;
+  box.innerHTML = `
+    <div class="art">${art ? `<img src="${esc(art)}" alt="${esc(label(it))}">` : ""}</div>
+    <h4>${wikiLink(it)}</h4>
+    <div class="meta">${where}${it.id ? `<span>id ${it.id}</span>` : `<span>name starts "${esc(it.prefix)}"</span>`}</div>
+    ${it.examine ? `<p class="ex">"${esc(it.examine)}"</p>` : ""}
+    ${note ? `<p class="note">${esc(note)}</p>` : ""}
+    ${alts}
+    <div class="tiers">${D.tiers.map(t => `<span class="tchip ${tiers[t] ? "on" : ""}" style="--c:${TIER_VAR(t)}" title="${tiers[t] === "w" ? "worn" : tiers[t] ? "backpack" : "not in this tier"}">${TIER_NAME[t]}</span>`).join("")}</div>`;
+}
+function bindDetail(root) {
+  root.querySelectorAll("[data-key]").forEach(el => {
+    const sel = () => ({ key: el.dataset.key, entry: el._entry });
+    el.addEventListener("mouseenter", () => showDetail(sel()));
+    el.addEventListener("focus", () => showDetail(sel()));
+    el.addEventListener("mouseleave", () => showDetail(pinned));
+    el.addEventListener("click", ev => {
+      if (ev.target.closest("a")) return;
+      pinned = sel();
+      document.querySelectorAll(".sel").forEach(x => x.classList.remove("sel"));
+      el.classList.add("sel");
+      showDetail(pinned);
+    });
+  });
+}
+
+// ── tier view ──
+function renderTabs() {
+  $("#tabs").innerHTML = D.tiers.map(t => {
+    const edited = presetFor(t).edited;
+    return `<button class="tier-tab ${edited ? "edited" : ""}" role="tab" aria-selected="${t === state.tier}" data-tier="${t}" style="--c:${TIER_VAR(t)}">
+      ${D.tierIcons[t] ? `<img src="${esc(D.tierIcons[t])}" alt="">` : ""}${TIER_NAME[t]}<span class="dot" title="Edited for ${esc(state.account)}"></span></button>`;
+  }).join("");
+  $("#tabs").querySelectorAll("button").forEach(b => b.onclick = () => { location.hash = b.dataset.tier.toLowerCase(); });
+}
+
+function renderTier() {
+  const t = state.tier;
+  const { entries, edited, base } = presetFor(t);
+  const worn = entries.filter(e => e.worn);
+  const pack = entries.filter(e => !e.worn);
+  const sharers = D.tiers.filter(x => x !== t && !presetFor(x).edited && !edited && D.builtinFor[x] === base);
+
+  // Worn: first line per slot fills it; later lines for the same slot are flagged.
+  const bySlot = {}, odd = [];
+  for (const e of worn) {
+    const s = slotOf(D.items[e.keys[0]]);
+    if (!SLOT_NAME[s]) { odd.push(e); continue; }
+    (bySlot[s] = bySlot[s] || []).push(e);
+  }
+  const twoHanded = bySlot.weapon && (D.items[bySlot.weapon[0].keys[0]].slot || "").toLowerCase() === "2h";
+  const equipCells = SLOTS.map(([s, c, r]) => {
+    const pos = `grid-column:${c + 1};grid-row:${r + 1}`;
+    const lines = bySlot[s];
+    if (!lines) {
+      if (s === "offhand" && twoHanded) {
+        const w = D.items[bySlot.weapon[0].keys[0]];
+        return `<div class="slot blocked" style="${pos}" title="Two-handed weapon">${img(w)}</div>`;
+      }
+      return `<div class="slot" style="${pos}"><span class="lbl">${SLOT_NAME[s]}</span></div>`;
+    }
+    const e = lines[lines.length - 1], it = D.items[e.keys[0]];
+    const clash = lines.length > 1 ? `<span class="badge tl clash" title="${lines.length} lines want this slot; the last one is put on last">${lines.length}×</span>` : "";
+    const alt = e.keys.length > 1 ? `<span class="badge br alt" title="or ${esc(e.keys.slice(1).map(k => label(D.items[k])).join(", "))}">+${e.keys.length - 1}</span>` : "";
+    return `<button class="slot" style="${pos}" data-key="${esc(e.keys[0])}" data-line="w${worn.indexOf(e)}" title="${esc(label(it))}" aria-label="${esc(label(it))}">${img(it)}${clash}${alt}</button>`;
+  }).join("");
+
+  // Backpack in preset order.
+  let used = 0;
+  const packCells = [];
+  for (const e of pack) {
+    const it = D.items[e.keys[0]];
+    for (let i = 0; i < e.count; i++) {
+      used++;
+      const badge = e.all ? `<span class="badge br all" title="Whole stack">All</span>`
+        : e.keys.length > 1 ? `<span class="badge br alt" title="or ${esc(e.keys.slice(1).map(k => label(D.items[k])).join(", "))}">+${e.keys.length - 1}</span>` : "";
+      packCells.push(`<button class="slot" data-key="${esc(e.keys[0])}" data-line="p${pack.indexOf(e)}" title="${esc(label(it))}" aria-label="${esc(label(it))}">${img(it)}${badge}</button>`);
+    }
+  }
+  const free = PACK_SIZE - used;
+  for (let i = 0; i < Math.max(0, free); i++)
+    packCells.push(`<div class="slot free">${i < KEEP_FREE ? `<span class="lbl">clue<br>scroll</span>` : ""}</div>`);
+  const packFoot = used > PACK_SIZE - KEEP_FREE
+    ? `<p class="foot warn">${used} slots of lines: only ${PACK_SIZE - KEEP_FREE} fit with the scroll's slot free, so the last powerbursts get cut.</p>`
+    : `<p class="foot">${used} slots used, ${free} free (${KEEP_FREE} kept for the clue scroll).</p>`;
+
+  const sourceText = edited
+    ? `<span class="pill edit">Edited for ${esc(state.account)}</span>`
+    : `<span class="pill">Built-in ${BUILTIN_NAME[base] || base}</span>`;
+  const shareText = sharers.length ? `<span class="stat">Same loadout as ${sharers.map(x => TIER_NAME[x]).join(" and ")}</span>` : "";
+
+  const main = $("#tier");
+  main.style.setProperty("--tc", TIER_VAR(t));
+  main.innerHTML = `
+    <div class="tier-head">
+      <h2>${TIER_NAME[t]} clues</h2>${sourceText}${shareText}
+      <span class="stat">${worn.length} worn · ${used} backpack slots</span>
+    </div>
+    <div class="board">
+      <div class="card"><h3>Worn</h3><div class="equip">${equipCells}</div>
+        ${odd.length ? `<p class="foot">Also worn: ${odd.map(e => wikiLink(D.items[e.keys[0]])).join(", ")}</p>` : ""}</div>
+      <div class="card"><h3>Backpack <span>${used} / ${PACK_SIZE}</span></h3><div class="pack">${packCells.join("")}</div>${packFoot}</div>
+      <div class="card detail" id="detail"></div>
+    </div>
+    ${renderChanges(t, entries, edited, base)}
+    <section class="block">
+      <h3>Item list</h3>
+      <div class="tablewrap"><table>
+        <thead><tr><th></th><th>Item</th><th>Where</th><th class="hide-sm">Script note</th></tr></thead>
+        <tbody>
+          <tr class="grp"><td colspan="4">Worn</td></tr>
+          ${worn.map((e, i) => row(e, `w${i}`)).join("")}
+          <tr class="grp"><td colspan="4">Backpack</td></tr>
+          ${pack.map((e, i) => row(e, `p${i}`)).join("")}
+        </tbody>
+      </table></div>
+    </section>`;
+
+  // Hand each element its preset line.
+  const lineOf = id => id[0] === "w" ? worn[+id.slice(1)] : pack[+id.slice(1)];
+  main.querySelectorAll("[data-line]").forEach(el => el._entry = lineOf(el.dataset.line));
+  bindDetail(main);
+  const first = main.querySelector(".equip [data-key]") || main.querySelector(".pack [data-key]");
+  pinned = first ? { key: first.dataset.key, entry: first._entry } : null;
+  if (first) first.classList.add("sel");
+  showDetail(pinned);
+}
+
+function row(e, lineId) {
+  const it = D.items[e.keys[0]];
+  const where = e.worn
+    ? `<span class="where w">${esc(SLOT_NAME[slotOf(it)] || it.slot || "Worn")}</span>`
+    : `<span class="where p">${e.all ? "All (stack)" : e.count > 1 ? "×" + e.count : "1"}</span>`;
+  const alts = e.keys.length > 1 ? ` <span class="n">or ${e.keys.slice(1).map(k => wikiLink(D.items[k])).join(", ")}</span>` : "";
+  const note = noteOf(e);
+  return `<tr data-key="${esc(e.keys[0])}" data-line="${lineId}"><td class="ic">${img(it)}</td><td>${wikiLink(it)}${alts}</td><td class="num">${where}</td><td class="hide-sm n">${esc(note)}</td></tr>`;
+}
+
+// What this tier's list changes against its starting point (built-in default, or the built-in it edits).
+function renderChanges(t, entries, edited, base) {
+  let against, title;
+  if (edited) { against = D.presets[base].entries; title = `${esc(state.account)}'s edit vs the built-in ${BUILTIN_NAME[base]}`; }
+  else if (base !== "DEFAULT") { against = D.presets.DEFAULT.entries; title = `Changes from the default preset (Easy, Medium, Master)`; }
+  else return "";
+  const summarize = list => {
+    const m = new Map();
+    for (const e of list) {
+      const k = e.keys[0];
+      const cur = m.get(k) || { worn: e.worn, count: 0, all: e.all, entry: e };
+      cur.count += e.count;
+      m.set(k, cur);
+    }
+    return m;
+  };
+  const a = summarize(entries), b = summarize(against);
+  const added = [], removed = [], moved = [], counted = [];
+  // An item still named in a line (as a fallback) isn't added or dropped.
+  const anyKey = list => new Set(list.flatMap(e => e.keys));
+  const inA = anyKey(entries), inB = anyKey(against);
+  for (const [k, v] of a) {
+    const o = b.get(k);
+    if (!o) { if (!inB.has(k) || v.entry.keys.length > 1) added.push([k, v]); }
+    else if (o.worn !== v.worn) moved.push([k, v, v.worn ? "now worn" : "now in backpack"]);
+    else if (!v.worn && !v.all && o.count !== v.count) counted.push([k, v, `×${o.count} → ×${v.count}`]);
+  }
+  for (const [k, v] of b) if (!a.has(k) && !inA.has(k)) removed.push([k, v]);
+  const chip = ([k, v, extra]) => {
+    const it = D.items[k];
+    const tag = extra || (v.worn ? "worn" : v.all ? "all" : v.count > 1 ? "×" + v.count : "");
+    return `<button class="ichip" data-key="${esc(k)}" data-chip="1">${img(it)}${esc(label(it))}${tag ? ` <span class="n">· ${esc(tag)}</span>` : ""}</button>`;
+  };
+  const col = (h, list) => `<div class="card"><h3>${h} <span>${list.length}</span></h3>${list.length ? `<div class="chiprow">${list.map(chip).join("")}</div>` : `<span class="none">Nothing</span>`}</div>`;
+  setTimeout(() => {
+    document.querySelectorAll("[data-chip]").forEach(el => el._entry = a.get(el.dataset.key)?.entry || b.get(el.dataset.key)?.entry);
+    bindDetail(document.querySelector(".changes"));
+  });
+  return `<section class="block"><h3>${title}</h3><div class="changes">
+    ${col("Added", added)}${col("Dropped", removed)}${moved.length ? col("Moved", moved) : ""}${counted.length ? col("Amount", counted) : ""}
+  </div></section>`;
+}
+
+// ── matrix: one column per distinct loadout ──
+function renderMatrix() {
+  const cols = [];
+  for (const t of D.tiers) {
+    const p = presetFor(t);
+    const sig = JSON.stringify(p.entries.map(e => [e.worn, e.all, e.count, e.keys]));
+    const c = cols.find(c => c.sig === sig);
+    if (c) c.tiers.push(t); else cols.push({ sig, tiers: [t], entries: p.entries });
+  }
+  const order = [];
+  const seen = new Set();
+  for (const c of cols) for (const e of c.entries) if (!seen.has(e.keys[0])) { seen.add(e.keys[0]); order.push({ key: e.keys[0], worn: e.worn }); }
+  // Worn items first, then backpack, each in first-seen order.
+  order.sort((x, y) => (y.worn - x.worn));
+  const cell = (c, key) => {
+    const es = c.entries.filter(e => e.keys[0] === key);
+    if (!es.length) return `<span class="mk x">—</span>`;
+    const e = es[0], n = es.reduce((s, e) => s + e.count, 0);
+    return e.worn ? `<span class="mk w">Worn</span>` : `<span class="mk p">${e.all ? "All" : n > 1 ? "×" + n : "Pack"}</span>`;
+  };
+  $("#matrix").innerHTML = `
+    <thead><tr><th></th><th>Item</th>${cols.map(c => `<th class="c" style="color:${TIER_VAR(c.tiers[0])}">${c.tiers.map(t => TIER_NAME[t]).join(" · ")}</th>`).join("")}</tr></thead>
+    <tbody>${order.map(({ key }) => {
+      const it = D.items[key];
+      return `<tr data-key="${esc(key)}"><td class="ic">${img(it)}</td><td>${wikiLink(it)}</td>${cols.map(c => `<td class="c">${cell(c, key)}</td>`).join("")}</tr>`;
+    }).join("")}</tbody>`;
+}
+
+// ── wiring ──
+function fromHash() {
+  const h = location.hash.replace("#", "").toUpperCase();
+  state.tier = D.tiers.includes(h) ? h : "EASY";
+  renderTabs();
+  renderTier();
+}
+
+const acct = $("#acct");
+acct.innerHTML = `<option value="">Built-in presets</option>` +
+  Object.keys(D.accounts).sort().map(a => `<option value="${esc(a)}">${esc(a)} (${Object.keys(D.accounts[a]).map(t => TIER_NAME[t] || t).join(", ")} edited)</option>`).join("");
+acct.onchange = () => { state.account = acct.value; renderTabs(); renderTier(); renderMatrix(); };
+
+$("#theme").onclick = () => {
+  const root = document.documentElement;
+  const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+};
+
+$("#ovsrc").textContent = D.overridesSource;
+$("#foot").innerHTML = `Built ${esc(D.generated)} from <code>${esc(D.source)}</code>. Images from the RuneScape Wiki, saved locally. Use <b>Rebuild</b> after a preset changes (or run <code>python3 ~/Desktop/clue-presets/build.py</code>).`;
+$("#built").textContent = "Built " + D.generated;
+
+// Rebuild: the desktop shortcut serves this page from serve.py, which runs build.py on POST /rebuild.
+const rb = $("#rebuild");
+if (location.protocol === "file:") {
+  rb.disabled = true;
+  rb.title = "Open the page from the Clue Presets desktop shortcut to rebuild";
+} else {
+  rb.title = "Re-read Presets.java and the account edits, fetch any new item images, and reload";
+  rb.onclick = async () => {
+    const box = $("#buildlog");
+    rb.disabled = true; rb.textContent = "Rebuilding…";
+    box.className = "buildlog";
+    try {
+      const r = await fetch("/rebuild", { method: "POST", headers: { "X-Rebuild": "1" } });
+      const res = await r.json();
+      if (res.ok) { location.reload(); return; }
+      box.className = "buildlog show err";
+      $("#buildmsg").textContent = "Rebuild failed; the page was not changed.";
+      $("#buildout").textContent = res.log || "";
+    } catch (e) {
+      box.className = "buildlog show err";
+      $("#buildmsg").textContent = "Couldn't reach the local server. Close this tab and open the desktop shortcut again.";
+      $("#buildout").textContent = String(e);
+    }
+    rb.disabled = false; rb.textContent = "Rebuild";
+  };
+}
+
+window.addEventListener("hashchange", fromHash);
+fromHash();
+renderMatrix();
+</script>
+</body>
+</html>

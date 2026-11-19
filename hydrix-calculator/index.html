@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en" data-target="hydrix">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="app" content="hydrix-calc">
+<title>Alchemical Hydrix Calculator</title>
+<link rel="icon" type="image/png" href="img/Alchemical_hydrix.png">
+<link rel="stylesheet" href="style.css?v=2">
+</head>
+<body>
+
+<header class="top">
+  <img class="hero" src="img/hero.png" alt="Alchemical hydrix">
+  <div class="title">
+    <h1>Alchemical Hydrix Calculator</h1>
+    <p class="sub">Full material tree down to base items, cheapest component sources and live Grand Exchange costs.</p>
+  </div>
+  <nav class="switch" aria-label="Choose calculator">
+    <a href="index.html" aria-current="page"><img src="img/Alchemical_hydrix.png" alt="">Hydrix</a>
+    <a href="onyx.html"><img src="img/Alchemical_onyx.png" alt="">Onyx</a>
+  </nav>
+  <div class="price-status" id="priceStatus" data-state="loading">
+    <span class="dot"></span>
+    <div class="ps-text">
+      <strong id="priceText">Loading prices…</strong>
+      <small id="priceSub"></small>
+    </div>
+    <button type="button" id="refreshBtn" class="btn">Refresh</button>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button type="button" role="tab" data-tab="calc">Hydrix calculator</button>
+  <button type="button" role="tab" data-tab="refined">Top 100 · Refined components</button>
+  <button type="button" role="tab" data-tab="other">Fortunate · Precious · Rumbling</button>
+</nav>
+
+<section class="settings panel">
+  <label class="field">
+    <span>Invention level</span>
+    <input type="number" id="setInv" min="1" max="120" step="1">
+  </label>
+  <label class="field wide">
+    <span>Junk chance reduction researched</span>
+    <select id="setJunk"></select>
+  </label>
+  <label class="field">
+    <span title="An item is hidden when it trades fewer per day than this AND fewer than its own buy limit. Set to 0 to show everything.">Hide illiquid items: daily volume under</span>
+    <input type="number" id="setMinVol" min="0" step="10">
+  </label>
+  <div class="field info">
+    <span>Junk refiner</span>
+    <strong id="refinerInfo">—</strong>
+  </div>
+</section>
+
+<main>
+  <!-- ============ CALCULATOR ============ -->
+  <section class="tab-panel" id="tab-calc" role="tabpanel">
+    <div class="calc-top">
+      <div class="panel qty-panel">
+        <label class="field big">
+          <span>How many alchemical hydrix?</span>
+          <input type="number" id="qty" min="1" step="1">
+        </label>
+        <div class="reqs" id="reqs"></div>
+      </div>
+      <div class="summary" id="summary"></div>
+    </div>
+
+    <details class="panel have-panel" id="havePanel">
+      <summary>Items you already have <small>(subtracted from what you need, treated as free)</small></summary>
+      <div class="have-grid" id="haveGrid"></div>
+      <button type="button" class="btn ghost" id="clearHave">Clear all</button>
+    </details>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Materials tree</h2>
+        <p class="muted">Auto picks whichever is cheaper right now: buying the item, or making it from the parts below. Component sources default to the cheapest mix that fits inside one 4-hour buy-limit window.</p>
+      </div>
+      <ul class="tree" id="tree"></ul>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head row">
+        <h2>Shopping list <small class="muted">base items to buy on the GE</small></h2>
+        <button type="button" class="btn" id="copyList">Copy list</button>
+      </div>
+      <div class="table-wrap"><table class="data" id="shopTable"></table></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>Experience</h2></div>
+      <div class="xp" id="xpBox"></div>
+    </div>
+  </section>
+
+  <!-- ============ REFINED TOP 100 ============ -->
+  <section class="tab-panel" id="tab-refined" role="tabpanel" hidden>
+    <div class="panel explain">
+      <img src="img/Refined_components.png" alt="" class="ic-lg">
+      <div>
+        <h2>Cheapest things to disassemble for refined components</h2>
+        <p>Tradeable items never drop refined components directly. They come from <a href="https://runescape.wiki/w/Junk" target="_blank" rel="noopener">junk</a>:
+        a <a href="https://runescape.wiki/w/Junk_refiner" target="_blank" rel="noopener">junk refiner</a> turns 100 junk into 1 refined component.
+        This list ranks items by the cost per refined component, including your share of the refiner. Junk chance depends on item level and your junk reduction research above.
+        The less junk reduction you have, the more refined components you get.</p>
+      </div>
+    </div>
+    <div class="panel filters">
+      <label class="field"><span>Search</span><input type="search" id="refSearch" placeholder="Item name…"></label>
+      <label class="field"><span>Minimum buy limit</span>
+        <select id="refMinLimit">
+          <option value="0">Any</option><option value="100">100+</option><option value="500">500+</option>
+          <option value="1000">1,000+</option><option value="5000">5,000+</option><option value="10000">10,000+</option>
+        </select></label>
+      <label class="field"><span>Show</span>
+        <select id="refShow"><option value="100">Top 100</option><option value="250">Top 250</option><option value="1000">Top 1,000</option></select></label>
+      <div class="field info"><span>Refined needed per hydrix</span><strong>50 = 5,000 junk</strong></div>
+    </div>
+    <div class="panel"><div class="table-wrap"><table class="data sortable" id="refTable"></table></div>
+      <p class="muted small" id="refFoot"></p></div>
+  </section>
+
+  <!-- ============ OTHER COMPONENTS ============ -->
+  <section class="tab-panel" id="tab-other" role="tabpanel" hidden>
+    <div class="pills" id="otherPills">
+      <button type="button" data-mat="fortunate"><img src="img/Fortunate_components.png" alt="">Fortunate</button>
+      <button type="button" data-mat="precious"><img src="img/Precious_components.png" alt="">Precious</button>
+      <button type="button" data-mat="rumbling"><img src="img/Rumbling_components.png" alt="">Rumbling</button>
+    </div>
+    <div class="panel explain" id="otherExplain"></div>
+    <div class="panel filters">
+      <label class="field"><span>Search</span><input type="search" id="othSearch" placeholder="Item name…"></label>
+      <label class="field"><span>Minimum buy limit</span>
+        <select id="othMinLimit">
+          <option value="0">Any</option><option value="5">5+</option><option value="100">100+</option>
+          <option value="1000">1,000+</option><option value="5000">5,000+</option>
+        </select></label>
+      <label class="field"><span>Show</span>
+        <select id="othShow"><option value="50">Top 50</option><option value="100">Top 100</option><option value="400">All</option></select></label>
+    </div>
+    <div class="panel"><div class="table-wrap"><table class="data sortable" id="othTable"></table></div>
+      <p class="muted small" id="othFoot"></p></div>
+  </section>
+</main>
+
+<footer>
+  Recipes, disassembly rates, images, prices, buy limits and volumes come from the
+  <a href="https://runescape.wiki/" target="_blank" rel="noopener">RuneScape Wiki</a>. Every item name links to its wiki page; every price links to its
+  Exchange page (price history + buy limit). Prices refresh from the wiki every time this page opens and are cached for offline use.
+  <span id="buildInfo"></span>
+</footer>
+
+<script src="data.js?v=2"></script>
+<script src="app.js?v=2"></script>
+</body>
+</html>
